@@ -3,7 +3,7 @@ package lw.inorderorders.service
 import java.text.NumberFormat
 import java.util.Locale
 
-enum class Price(val amount: Double) {
+enum class Product(val amount: Double) {
     APPLE(0.60),
     ORANGE(0.25)
 }
@@ -12,23 +12,33 @@ class CashRegister {
     companion object {
         fun checkout(order: String?): String {
 
-            var sum = 0.0
+            val products = getValidProducts(splitOrder(order))
 
-            getOrderItems(order).forEach { value ->
-                sum += calculateCharge(value)
-            }
+            val cost = products.map { it.amount }.sum() - determineDiscount(products)
 
-            return formatCurrency(sum)
+            return formatCurrency(cost)
         }
 
-        fun getOrderItems(order: String?): List<String> =
+        fun splitOrder(order: String?): List<String> =
                 order?.split(",")?.map { item -> item.trim().toUpperCase() } ?: emptyList()
 
-        fun calculateCharge(product: String) = when (product) {
-            Price.APPLE.name -> Price.APPLE.amount
-            Price.ORANGE.name -> Price.ORANGE.amount
-            else -> 0.0
-        }
+
+        fun getValidProducts(items: List<String>): List<Product> =
+                items.mapNotNull { item ->
+                    when (item) {
+                        Product.APPLE.name -> Product.APPLE
+                        Product.ORANGE.name -> Product.ORANGE
+                        else -> null
+                    }
+                }
+
+        fun determineDiscount(products: List<Product>) =
+                products.groupBy { it }.map { (key, value) ->
+                    when (key) {
+                        Product.APPLE -> (value.size / 2) * key.amount
+                        Product.ORANGE -> (value.size / 3) * (key.amount * 2)
+                    }
+                }.sum()
 
         private fun formatCurrency(amount: Double): String =
                 NumberFormat.getCurrencyInstance(Locale("en", "US")).format(amount)

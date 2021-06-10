@@ -1,7 +1,9 @@
 package lw.inorderorders
 
 import lw.inorderorders.service.CashRegister
+import lw.inorderorders.service.Product
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -9,56 +11,102 @@ import kotlin.test.assertEquals
 class CashRegisterTests {
 
     @Nested
-    inner class GetOrderItems {
+    inner class SplitOrder {
         @Test
-        fun `getOrderItems removes whitespace`() {
+        fun `splitOrder removes whitespace`() {
             val input = "    FOO,    BAR     ,   LAA"
 
-            val output = CashRegister.getOrderItems(input)
+            val output = CashRegister.splitOrder(input)
 
-            Assertions.assertThat(output).containsExactlyInAnyOrderElementsOf(listOf("FOO", "BAR", "LAA"))
+            assertThat(output).containsExactlyInAnyOrderElementsOf(listOf("FOO", "BAR", "LAA"))
         }
 
         @Test
-        fun `getOrderItems capitalizes all values`() {
+        fun `splitOrder capitalizes all values`() {
             val input = "fOo,BaR,lAA"
 
-            val output = CashRegister.getOrderItems(input)
+            val output = CashRegister.splitOrder(input)
 
-            Assertions.assertThat(output).containsExactlyInAnyOrderElementsOf(listOf("FOO", "BAR", "LAA"))
+            assertThat(output).containsExactlyInAnyOrderElementsOf(listOf("FOO", "BAR", "LAA"))
         }
 
         @Test
-        fun `getOrderItems handles null input`() {
+        fun `splitOrder handles null input`() {
             val input = null
 
-            val output = CashRegister.getOrderItems(input)
+            val output = CashRegister.splitOrder(input)
 
-            Assertions.assertThat(output).isEmpty()
+            assertThat(output).isEmpty()
         }
     }
 
     @Nested
-    inner class CalculateCharge {
+    inner class GetValidProducts {
+
         @Test
-        fun `calculateCharge returns correct prices`() {
-            val appleInput = "APPLE"
+        fun `getValidProducts removes invalid items`() {
+            val input = listOf("FOO", "BAR", "APPLE", "ORANGE", "APPLE")
 
-            val appleOutput = CashRegister.calculateCharge(appleInput)
+            val output = CashRegister.getValidProducts(input)
 
-            assertEquals(0.6, appleOutput)
+            assertThat(output).containsExactlyInAnyOrderElementsOf(listOf(Product.ORANGE, Product.APPLE, Product.APPLE))
+        }
 
-            val orangeInput = "ORANGE"
+        @Test
+        fun `getValidProducts handles empty list`() {
+            val input = emptyList<String>()
 
-            val orangeOutput = CashRegister.calculateCharge(orangeInput)
+            val output = CashRegister.getValidProducts(input)
 
-            assertEquals(0.25, orangeOutput)
+            assertThat(output).isEmpty()
+        }
+    }
 
-            val badInput = "BLAHBLAHBLAH"
+    @Nested
+    inner class DetermineDiscount {
+        @Test
+        fun `two apples cost the same as one`() {
+            val input = listOf(Product.APPLE, Product.APPLE)
 
-            val badOutput = CashRegister.calculateCharge(badInput)
+            val output = CashRegister.determineDiscount(input)
 
-            assertEquals(0.0, badOutput)
+            assertEquals(0.6, output)
+        }
+
+        @Test
+        fun `three apples only apply discount for two apples`() {
+            val input = listOf(Product.APPLE, Product.APPLE, Product.APPLE)
+
+            val output = CashRegister.determineDiscount(input)
+
+            assertEquals(0.6, output)
+        }
+
+        @Test
+        fun `three oranges cost the same as two`() {
+            val input = listOf(Product.ORANGE, Product.ORANGE, Product.ORANGE)
+
+            val output = CashRegister.determineDiscount(input)
+
+            assertEquals(0.5, output)
+        }
+
+        @Test
+        fun `five oranges only apply discount for three`() {
+            val input = listOf(Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.ORANGE)
+
+            val output = CashRegister.determineDiscount(input)
+
+            assertEquals(0.5, output)
+        }
+
+        @Test
+        fun `determines discount for both product types at once`() {
+            val input = listOf(Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.APPLE, Product.APPLE)
+
+            val output = CashRegister.determineDiscount(input)
+
+            assertEquals(1.1, output)
         }
     }
 
@@ -70,7 +118,7 @@ class CashRegisterTests {
 
             val output = CashRegister.checkout(input)
 
-            assertEquals("$2.05", output)
+            assertEquals("$1.45", output)
         }
     }
 }
