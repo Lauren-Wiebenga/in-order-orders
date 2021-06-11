@@ -36,7 +36,7 @@ class CashRegister {
                 products.groupBy { it }.map { (key, value) ->
                     when (key) {
                         Product.APPLE -> (value.size / 2) * key.amount
-                        Product.ORANGE -> (value.size / 3) * (key.amount * 2)
+                        Product.ORANGE -> (value.size / 3) * key.amount
                     }
                 }.sum()
 

@@ -1,23 +1,38 @@
 package lw.inorderorders.service
 
-class OrderService {
-    companion object {
-        fun takeOrder() {
-            var exit = false;
-            while (!exit) {
-                println("""
-                    Welcome!
-                    Enter your order:
-                """.trimIndent())
+import org.springframework.amqp.core.FanoutExchange
+import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.stereotype.Service
 
-                val order = readLine()
+@Service
+class OrderService(
+        val template: RabbitTemplate,
+        val fanoutExchange: FanoutExchange
+) {
 
-                println("You owe ${CashRegister.checkout(order)}")
+    fun takeOrder() {
+        template.setExchange(fanoutExchange.name)
 
-                println("Would you like to exit?(y/n)")
-                val exitAnswer = readLine()
-                exit = exitAnswer?.toUpperCase() == "Y"
-            }
+        var exit = false;
+        while (!exit) {
+            println("""
+            Welcome!
+            Enter your order:
+        """.trimIndent())
+
+            val order = readLine()
+            val charge = CashRegister.checkout(order)
+
+            println("You owe $charge")
+
+            template.convertAndSend("""
+                
+                Your order has shipped!
+                
+                Would you like to exit?(y/n)
+            """.trimIndent())
+
+            exit = readLine()?.toUpperCase() == "Y"
         }
     }
 }

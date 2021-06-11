@@ -1,0 +1,8 @@
+spring:
+  rabbitmq:
+    port: 5672
+  main:
+    web-application-type: none
+
+queue.name: mail-queue
+exchange.name: mail-exchange

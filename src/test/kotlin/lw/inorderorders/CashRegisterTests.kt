@@ -2,7 +2,6 @@ package lw.inorderorders
 
 import lw.inorderorders.service.CashRegister
 import lw.inorderorders.service.Product
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -65,7 +64,7 @@ class CashRegisterTests {
     @Nested
     inner class DetermineDiscount {
         @Test
-        fun `two apples cost the same as one`() {
+        fun `two apples produce single apple discount`() {
             val input = listOf(Product.APPLE, Product.APPLE)
 
             val output = CashRegister.determineDiscount(input)
@@ -74,7 +73,7 @@ class CashRegisterTests {
         }
 
         @Test
-        fun `three apples only apply discount for two apples`() {
+        fun `three apples produce single apple discount`() {
             val input = listOf(Product.APPLE, Product.APPLE, Product.APPLE)
 
             val output = CashRegister.determineDiscount(input)
@@ -83,17 +82,26 @@ class CashRegisterTests {
         }
 
         @Test
-        fun `three oranges cost the same as two`() {
+        fun `three oranges produce single orange discount`() {
             val input = listOf(Product.ORANGE, Product.ORANGE, Product.ORANGE)
 
             val output = CashRegister.determineDiscount(input)
 
-            assertEquals(0.5, output)
+            assertEquals(0.25, output)
         }
 
         @Test
-        fun `five oranges only apply discount for three`() {
+        fun `five oranges produce single orange discount`() {
             val input = listOf(Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.ORANGE)
+
+            val output = CashRegister.determineDiscount(input)
+
+            assertEquals(0.25, output)
+        }
+
+        @Test
+        fun `siz oranges produce two orange discount`() {
+            val input = listOf(Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.ORANGE, Product.ORANGE)
 
             val output = CashRegister.determineDiscount(input)
 
@@ -106,7 +114,7 @@ class CashRegisterTests {
 
             val output = CashRegister.determineDiscount(input)
 
-            assertEquals(1.1, output)
+            assertEquals(0.85, output)
         }
     }
 
