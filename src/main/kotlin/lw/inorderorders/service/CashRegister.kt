@@ -10,11 +10,9 @@ enum class Product(val amount: Double) {
 
 class CashRegister {
     companion object {
-        fun checkout(order: String?): String {
+        fun checkout(products: List<Product>): String {
 
-            val products = getValidProducts(splitOrder(order))
-
-            val cost = products.map { it.amount }.sum() - determineDiscount(products)
+            val cost = products.sumOf { it.amount } - determineDiscount(products)
 
             return formatCurrency(cost)
         }
@@ -23,8 +21,8 @@ class CashRegister {
                 order?.split(",")?.map { item -> item.trim().toUpperCase() } ?: emptyList()
 
 
-        fun getValidProducts(items: List<String>): List<Product> =
-                items.mapNotNull { item ->
+        fun getValidProducts(items: String): List<Product> =
+                splitOrder(items).mapNotNull { item ->
                     when (item) {
                         Product.APPLE.name -> Product.APPLE
                         Product.ORANGE.name -> Product.ORANGE

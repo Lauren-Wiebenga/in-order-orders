@@ -44,7 +44,7 @@ class CashRegisterTests {
 
         @Test
         fun `getValidProducts removes invalid items`() {
-            val input = listOf("FOO", "BAR", "APPLE", "ORANGE", "APPLE")
+            val input = "FOO,BAR,APPLE,ORANGE,APPLE"
 
             val output = CashRegister.getValidProducts(input)
 
@@ -52,8 +52,8 @@ class CashRegisterTests {
         }
 
         @Test
-        fun `getValidProducts handles empty list`() {
-            val input = emptyList<String>()
+        fun `getValidProducts handles empty string`() {
+            val input = ""
 
             val output = CashRegister.getValidProducts(input)
 
@@ -122,7 +122,7 @@ class CashRegisterTests {
     inner class Checkout {
         @Test
         fun `checkout returns correct total`() {
-            val input = "apple,apple,orange,apple"
+            val input = listOf(Product.APPLE, Product.APPLE, Product.ORANGE, Product.APPLE)
 
             val output = CashRegister.checkout(input)
 

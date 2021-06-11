@@ -13,7 +13,10 @@ class OrderService(
     fun takeOrder() {
         template.setExchange(fanoutExchange.name)
 
-        var exit = false;
+        var exit = false
+        var apples = 5
+        var oranges = 16
+
         while (!exit) {
             println("""
             Welcome!
@@ -21,16 +24,32 @@ class OrderService(
         """.trimIndent())
 
             val order = readLine()
-            val charge = CashRegister.checkout(order)
+            val products = CashRegister.getValidProducts(order ?: "")
 
-            println("You owe $charge")
+            if (products.filter { it == Product.APPLE }.size <= apples &&
+                    products.filter { it == Product.ORANGE }.size <= oranges) {
 
-            template.convertAndSend("""
+                val charge = CashRegister.checkout(products)
+
+                apples -= products.filter { it == Product.APPLE }.size
+                oranges -= products.filter { it == Product.ORANGE }.size
+
+                println("You owe $charge")
+
+                template.convertAndSend("""
                 
                 Your order has shipped!
                 
                 Would you like to exit?(y/n)
             """.trimIndent())
+            } else {
+                template.convertAndSend("""
+                    
+                    Unable to complete order, out of stock.
+                    
+                    Would you like to exit?(y/n)
+                """.trimIndent())
+            }
 
             exit = readLine()?.toUpperCase() == "Y"
         }
